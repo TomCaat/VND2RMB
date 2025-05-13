@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ubuntu:20.04
+      options: --privileged # 允许容器具有特权，避免因权限问题造成故障
     defaults:
       run:
         shell: bash
@@ -19,14 +20,14 @@ jobs:
           # 检查 yes 命令是否存在，如果不存在则安装
           if ! command -v yes &> /dev/null; then
             echo "yes command not found, installing..."
-            sudo apt update
-            sudo apt install -y yes
+            apt update
+            apt install -y yes
           else
             echo "yes command already installed."
           fi
 
           # 安装其他依赖
-          sudo apt install -y curl zip unzip openjdk-17-jdk python3-pip build-essential dos2unix
+           apt install -y curl zip unzip openjdk-17-jdk python3-pip build-essential dos2unix
         
 
       - name: Link sh to dash to fix sdkmanager
