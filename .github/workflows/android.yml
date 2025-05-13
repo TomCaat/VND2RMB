@@ -26,12 +26,12 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          cmdline-tools-version: 6858099  # cmdline-tools 7.0
           packages: |
             platform-tools
             build-tools;30.0.3
             platforms;android-31
             ndk;25.1.8937393
+          accept-android-sdk-licenses: true
 
       - name: Set up environment variables
         run: |
@@ -43,8 +43,17 @@ jobs:
 
       - name: Create sdkmanager symlink for Buildozer
         run: |
+          # 确保目标目录存在
           mkdir -p "$ANDROID_HOME/tools/bin"
-          ln -sf "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "$ANDROID_HOME/tools/bin/sdkmanager"
+
+          # 查看实际安装路径（调试用）
+          echo "Checking cmdline-tools installation path..."
+          ls -la "$ANDROID_HOME/cmdline-tools"
+
+          # 根据实际版本调整路径（示例：12.0.1）
+          ln -sf "$ANDROID_HOME/cmdline-tools/12.0.1/bin/sdkmanager" "$ANDROID_HOME/tools/bin/sdkmanager"
+
+          # 验证软链接是否有效
           if [ -f "$ANDROID_HOME/tools/bin/sdkmanager" ]; then
             echo "Symbolic link created successfully."
           else
