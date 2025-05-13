@@ -14,6 +14,35 @@ jobs:
       run:
         shell: bash
     steps:
+
+      - name: Upgrade sdkManager
+        run: |
+          # 下载 Command-line Tools（兼容 JDK 17）
+          curl -L -o commandlinetools-linux-latest.zip https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
+
+          # 清理旧 SDK 目录（备份重要数据后执行）
+          rm -rf $ANDROID_HOME
+          rm -rf /usr/local/lib/android/sdk
+
+          # 设置 ANDROID_HOME（统一路径）
+          export ANDROID_HOME=$HOME/Android/Sdk
+          mkdir -p $ANDROID_HOME
+
+          # 解压到临时目录并移动内容
+          unzip commandlinetools-linux-latest.zip -d $HOME/temp_sdk
+          mkdir -p $ANDROID_HOME/cmdline-tools/latest
+          mv $HOME/temp_sdk/cmdline-tools/* $ANDROID_HOME/cmdline-tools/latest/
+          rm -rf $HOME/temp_sdk
+
+          # 更新 PATH 并验证
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          
+          # 更新 SDK 组件（使用 SDK Manager 脚本）
+          sdkmanager --update
+
+          # 接受 SDK 协议（使用统一路径）
+          yes | sdkmanager --licenses
+
       - name: Install base dependencies
         run: |
           apt update
@@ -84,29 +113,6 @@ jobs:
           # 创建 JAXB 存储目录
           mkdir -p $HOME/jaxb
 
-          # 下载 Command-line Tools（兼容 JDK 17）
-          # wget https://dl.google.com/android/repository/commandlinetools-linux-12258854_latest.zip -O commandlinetools-linux-latest.zip
-          curl -L -o commandlinetools-linux-latest.zip https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
-
-          
-          # 清理旧 SDK 目录（备份重要数据后执行）
-          rm -rf $ANDROID_HOME
-          rm -rf /usr/local/lib/android/sdk
-
-          # 设置 ANDROID_HOME（统一路径）
-          export ANDROID_HOME=$HOME/Android/Sdk
-          mkdir -p $ANDROID_HOME
-
-          # 解压到临时目录并移动内容
-          unzip commandlinetools-linux-latest.zip -d $HOME/temp_sdk
-          mkdir -p $ANDROID_HOME/cmdline-tools/latest
-          mv $HOME/temp_sdk/* $ANDROID_HOME/cmdline-tools/latest/
-          rm -rf $HOME/temp_sdk
-
-          # 更新 PATH 并验证
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-
-
           # 验证 Java 版本
           java -version 2>&1 | grep -i "version"
           javac -version 2>&1 | grep -i "version"
@@ -121,12 +127,6 @@ jobs:
 
           # 设置 JAXB 上下文工厂（强制指定实现类）
           export JAXB_CONTEXT_FACTORY="com.sun.xml.bind.v2.ContextFactory"
-
-          # 更新 SDK 组件（使用 SDK Manager 脚本）
-          sdkmanager --update
-
-          # 接受 SDK 协议（使用统一路径）
-          yes | sdkmanager --licenses
           
       - name: Install Buildozer   
         run: |
