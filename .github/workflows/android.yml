@@ -21,7 +21,13 @@ jobs:
         run: rm -rf ~/.buildozer
 
       - name: Accept SDK licenses
-        run: yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        run: |
+          yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Install required SDK packages
+        run: |
+          yes | sdkmanager --update
+          yes | sdkmanager "platform-tools" "build-tools;30.0.3" "platforms;android-31"
 
       - name: Build APK
         run: |
