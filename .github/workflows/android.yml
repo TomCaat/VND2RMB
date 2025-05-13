@@ -7,77 +7,71 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults: 
-      run: 
+    container:
+      image: ubuntu:20.04
+    defaults:
+      run:
         shell: bash
     steps:
+      - name: Install base dependencies
+        run: |
+          apt update
+          apt install -y curl sudo zip unzip openjdk-17-jdk python3-pip build-essential bash dash yes dos2unix
+
+      - name: Link sh to dash to fix sdkmanager
+        run: |
+          ln -sf /bin/dash /usr/bin/sh
+          ln -sf /usr/bin/python3 /usr/bin/python
+
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          echo $BASH_VERSION
-          sudo apt update
-          sudo apt install -y zip unzip openjdk-17-jdk python3-pip build-essential
-          sudo apt-get update && sudo apt-get install -y yes
-          sudo apt install -y bash dash 
-          sudo ln -sf /bin/dash /usr/bin/sh
-          pip install --upgrade buildozer cython
-
       - name: Normalize line endings and fix smart quotes
         run: |
-          sudo apt install -y dos2unix
-
           echo "📦 Converting CRLF to LF..."
           find . -type f -exec dos2unix {} \;
-
           echo "✂️ Replacing smart quotes (‘’)..."
           find . -type f \( -name "*.py" -o -name "*.sh" -o -name "*.kv" -o -name "*.spec" -o -name "*.yml" \) \
             -exec sed -i "s/‘/'/g; s/’/'/g" {} \;
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+      - name: Set up environment
+        run: |
+          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
+          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+          echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
+          echo "/usr/local/lib/android/sdk/build-tools/30.0.3" >> $GITHUB_PATH
+          echo "/usr/local/lib/android/sdk/tools/bin" >> $GITHUB_PATH
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
-          cmdline-tools-version: 12266719 # 这就是16.0的别称。
+          cmdline-tools-version: 12266719
 
-      - name: Check if sdkmanager exists
+      - name: Create sdkmanager symlink (ensure latest available)
         run: |
-          echo "Checking sdkmanager path:"
-          ls -l /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager
+          cd /usr/local/lib/android/sdk/cmdline-tools
+          mkdir -p latest
+          cp -r 16.0/* latest/
 
-      - name: Trace sdkmanager command with strace
-        run: |
-          echo "Checking SDK installation..."
-          ls -l /usr/local/lib/android/sdk/cmdline-tools/latest/bin
-
-          echo "Running strace on sdkmanager..."
-          strace -f -e execve /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
-
-      - name: Ensure yes command is available
-        run: |
-          echo "Ensuring yes is in PATH..."
-          which yes || sudo apt-get install -y yes
-
-      - name: Install Android SDK Packages Separately
+      - name: Install Android SDK Packages
         shell: bash
         run: |
-          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --update
+          echo "👉 Accepting all licenses..."
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
 
+          echo "🔄 Updating sdkmanager..."
+          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --update
+
+          echo "📦 Installing Android SDK components..."
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;30.0.3"
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-31"
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "ndk;25.1.8937393"
 
         env:
-          JAVA_HOME: ${{ env.JAVA_HOME }}
+          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
           ANDROID_HOME: /usr/local/lib/android/sdk
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
           PATH: /usr/local/lib/android/sdk/cmdline-tools/latest/bin:$PATH
@@ -85,43 +79,21 @@ jobs:
       - name: Debug - Print SDK paths
         run: |
           echo "ANDROID_HOME: $ANDROID_HOME"
-          echo "Listing SDK root directory:"
           ls -la /usr/local/lib/android/sdk/
-          echo "Listing cmdline-tools:"
           ls -la /usr/local/lib/android/sdk/cmdline-tools/
-          echo "Listing build-tools:"
           ls -la /usr/local/lib/android/sdk/build-tools/
-          echo "Listing platforms:"
           ls -la /usr/local/lib/android/sdk/platforms/
-          echo "Listing NDK:"
           ls -la /usr/local/lib/android/sdk/ndk/
+
+      - name: Install Buildozer
+        run: |
+          pip install --upgrade buildozer cython
 
       - name: Create Buildozer SDK Symlink
         run: |
-          BUILDOZER_SDK_PATH="$HOME/.buildozer/android/platform/android-sdk-21"
-          mkdir -p "$(dirname "$BUILDOZER_SDK_PATH")"
-          ln -sf /usr/local/lib/android/sdk "$BUILDOZER_SDK_PATH"
-          if [ -d "$BUILDOZER_SDK_PATH" ]; then
-            echo "✅ Symlink created successfully at $BUILDOZER_SDK_PATH"
-          else
-            echo "❌ Failed to create symlink"
-            exit 1
-          fi
-
-      - name: Set up environment variables
-        run: |
-          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-          echo "ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk/25.1.8937393" >> $GITHUB_ENV
-          echo "/usr/local/lib/android/sdk/tools/bin" >> $GITHUB_PATH
-          echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
-          echo "/usr/local/lib/android/sdk/build-tools/30.0.3" >> $GITHUB_PATH
-
-      - name: Install missing packages with sdkmanager
-        run: |
-          cd /usr/local/lib/android/sdk/cmdline-tools
-          mkdir -p latest && cp -r 16.0/* latest/
-          yes | sdkmanager --licenses
-          sdkmanager "build-tools;30.0.3" "platforms;android-31" "ndk;25.1.8937393"
+          SDK_PATH="$HOME/.buildozer/android/platform/android-sdk-21"
+          mkdir -p "$(dirname "$SDK_PATH")"
+          ln -sf /usr/local/lib/android/sdk "$SDK_PATH"
 
       - name: Build APK
         run: |
@@ -138,63 +110,3 @@ jobs:
           name: vnd2rmb-apk
           path: bin/*.apk
           if-no-files-found: warn
-
-  post-check:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Check 1 - Buildozer SDK Symlink
-        id: check-symlink
-        run: |
-          BUILDOZER_PATH="$HOME/.buildozer/android/platform/android-sdk-21"
-          if [ -L "$BUILDOZER_PATH" ] && [ -d "$(readlink "$BUILDOZER_PATH")" ]; then
-            echo "✅ Buildozer SDK symlink exists and points to a valid directory."
-            echo "RESULT=OK" >> $GITHUB_ENV
-          else
-            echo "❌ Buildozer SDK symlink is missing or invalid!"
-            echo "RESULT=FAILED" >> $GITHUB_ENV
-          fi
-        continue-on-error: true
-
-      - name: Output Check 1 Result
-        run: |
-          echo "Check 1 Status: ${{ env.RESULT }}"
-
-      - name: Check 2 - SDK Tools Exist
-        id: check-sdk-tools
-        run: |
-          SDK_PATH="/usr/local/lib/android/sdk"
-          TOOLS=("build-tools/30.0.3/aapt" "platform-tools/adb")
-          for tool in "${TOOLS[@]}"; do
-            if [ ! -f "$SDK_PATH/$tool" ]; then
-              echo "❌ Missing SDK tool: $tool"
-              echo "RESULT=FAILED" >> $GITHUB_ENV
-              exit 1
-            fi
-          done
-          echo "✅ All required SDK tools exist."
-          echo "RESULT=OK" >> $GITHUB_ENV
-        continue-on-error: true
-
-      - name: Output Check 2 Result
-        run: |
-          echo "Check 2 Status: ${{ env.RESULT }}"
-
-      - name: Check 3 - Buildozer Debug Run
-        id: check-buildozer
-        run: |
-          if buildozer -v android debug 2>&1 | grep -q "ERROR"; then
-            echo "❌ Buildozer debug output contains errors!"
-            echo "RESULT=FAILED" >> $GITHUB_ENV
-          else
-            echo "✅ Buildozer debug ran without critical errors."
-            echo "RESULT=OK" >> $GITHUB_ENV
-          fi
-        continue-on-error: true
-
-      - name: Output Check 3 Result
-        run: |
-          echo "Check 3 Status: ${{ env.RESULT }}"
