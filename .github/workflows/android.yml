@@ -17,20 +17,12 @@ jobs:
       - name: Install base dependencies
         run: |
           apt update
-          # 检查 yes 命令是否存在，如果不存在则安装
-          if ! command -v yes &> /dev/null; then
-            echo "yes command not found, installing..."
-            apt update
-            apt install -y yes
-          else
-            echo "yes command already installed."
-          fi
 
-          # 安装其他依赖
+          # 安装依赖
            export DEBIAN_FRONTEND=noninteractive  # 跳过交互式配置
-           apt install -y curl zip unzip openjdk-17-jdk python3-pip build-essential dos2unix git
-           apt install -y libjaxb-api-java
-           apt install -y libjaxb-impl-java
+           apt install -y curl zip unzip openjdk-8-jdk python3-pip build-essential dos2unix git
+           # apt install -y libjaxb-api-java
+           # apt install -y libjaxb-impl-java
 
         
 
@@ -52,7 +44,7 @@ jobs:
 
       - name: Set up environment
         run: |
-          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
+          echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
           echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
@@ -84,7 +76,7 @@ jobs:
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "ndk;25.1.8937393"
 
         env:
-          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+          JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
           ANDROID_HOME: /usr/local/lib/android/sdk
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
           PATH: /usr/local/lib/android/sdk/cmdline-tools/latest/bin:$PATH
