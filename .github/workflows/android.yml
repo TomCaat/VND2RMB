@@ -16,6 +16,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y zip unzip openjdk-17-jdk python3-pip build-essential
+          sudo apt install -y bash dash 
           pip install --upgrade buildozer cython
 
       - name: Set up JDK 17
@@ -30,7 +31,16 @@ jobs:
           accept-android-sdk-licenses: true
           cmdline-tools-version: 12266719 # 这就是16.0的别称。
 
+      - name: Check shell availability
+        shell: bash
+        run: |
+          echo "Checking /bin/sh symlink and sh availability..."
+          ls -l /bin/sh
+          which sh
+          sh --version || echo "sh is not available"
+
       - name: Install Android SDK Packages Separately
+        shell: bash
         run: |
           sdkmanager "platform-tools"
           sdkmanager "build-tools;30.0.3"
@@ -40,8 +50,6 @@ jobs:
           JAVA_HOME: ${{ env.JAVA_HOME }}
           ANDROID_HOME: /usr/local/lib/android/sdk
           PATH: /usr/local/lib/android/sdk/cmdline-tools/latest/bin:$PATH
-
-
 
       - name: Debug - Print SDK paths
         run: |
