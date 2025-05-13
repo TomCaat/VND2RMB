@@ -10,7 +10,7 @@ version = 0.1
 requirements = python3,kivy==2.1.0,requests==2.28.2,openssl
 orientation = portrait
 fullscreen = 1
-icon = ./assets/icon.png
+icon = ./assets/icon.jpeg
 android.permissions = INTERNET
 android.api = 31
 android.ndk = 23b
