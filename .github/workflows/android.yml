@@ -20,11 +20,22 @@ jobs:
 
           # 安装依赖
            export DEBIAN_FRONTEND=noninteractive  # 跳过交互式配置
-           apt install -y curl zip unzip openjdk-8-jdk python3-pip build-essential dos2unix git
-           # apt install -y libjaxb-api-java
+           apt install -y curl zip unzip openjdk-17-jdk python3-pip build-essential dos2unix git
+           apt install -y libjaxb-api-java
            # apt install -y libjaxb-impl-java
 
-        
+      - name: Set up JAXB and configure CLASSPATH
+        run: |
+          # Download libjaxb-impl-java 2.3.0
+          curl -L -o $HOME/jaxb/jaxb-impl-2.3.0.jar https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.0/jaxb-impl-2.3.0.jar
+
+          # Add JAXB JAR to CLASSPATH
+          export CLASSPATH=$CLASSPATH:$HOME/jaxb/jaxb-impl-2.3.0.jar
+          echo "CLASSPATH=$CLASSPATH"
+
+          # Automatically accept licenses for sdkmanager
+          yes | /usr/local/lib/android/sdk/tools/bin/sdkmanager --licenses
+      
 
       - name: Link sh to dash to fix sdkmanager
         run: |
@@ -44,7 +55,7 @@ jobs:
 
       - name: Set up environment
         run: |
-          echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
+          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
           echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
@@ -76,7 +87,7 @@ jobs:
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "ndk;25.1.8937393"
 
         env:
-          JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
           ANDROID_HOME: /usr/local/lib/android/sdk
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
           PATH: /usr/local/lib/android/sdk/cmdline-tools/latest/bin:$PATH
@@ -100,6 +111,18 @@ jobs:
           SDK_PATH="$HOME/.buildozer/android/platform/android-sdk-21"
           mkdir -p "$(dirname "$SDK_PATH")"
           ln -sf /usr/local/lib/android/sdk "$SDK_PATH"
+
+      - name: Verify JAXB API and Impl are loaded correctly
+        run: |
+          # Compile a simple Java program to check JAXB classes
+          echo 'import javax.xml.bind.JAXBContext;' > $HOME/testJAXB.java
+          echo 'public class TestJAXB { public static void main(String[] args) { try { JAXBContext.newInstance(Object.class); System.out.println("JAXB is available!"); } catch (Exception e) { e.printStackTrace(); } } }' >> $HOME/testJAXB.java
+
+          # Compile the Java program
+          javac -cp $CLASSPATH:$HOME/jaxb/jaxb-api-2.3.0.jar:$HOME/jaxb/jaxb-impl-2.3.0.jar $HOME/testJAXB.java
+
+          # Run the compiled program
+          java -cp $CLASSPATH:$HOME/jaxb/jaxb-api-2.3.0.jar:$HOME/jaxb/jaxb-impl-2.3.0.jar TestJAXB
 
       - name: Build APK
         run: |
