@@ -23,9 +23,10 @@ android.archs = arm64-v8a
 android.strip_debug = 1
 android.sdk_path = /usr/local/lib/android/sdk
 android.ndk_path = /usr/local/lib/android/sdk/ndk/25.1.8937393
+android.skip_update =True
+android.accept_sdk_license = True
 
 [buildozer]
 log_level = 2  
 warn_on_root = 1
-android.sdk_path = /usr/local/lib/android/sdk
-android.ndk_path = /usr/local/lib/android/sdk/ndk/25.1.8937393
+
