@@ -18,7 +18,12 @@ jobs:
           pip install buildozer
 
       - name: Build APK
-        run: buildozer android debug
+        run: |
+          buildozer android debug
+
+      - name: List files in bin folder (for debugging)
+        run: |
+          ls -l bin
 
       - name: Upload APK
         uses: actions/upload-artifact@v3
