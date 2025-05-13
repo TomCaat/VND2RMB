@@ -4,13 +4,14 @@ on:
   push:
     branches: [ main ]
 
-
 jobs:
   build:
-    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:20.04  # 你可以选择其他适合的容器镜像
+      options: --user root  # 使用 root 用户权限
     defaults: 
       run: 
-        shell: bash
+        shell: bash  # 明确指定使用 bash shell
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,9 +19,6 @@ jobs:
       - name: Install dependencies
         run: |
           echo $BASH_VERSION
-
-      - name: Install dependencies
-        run: |
           sudo apt update
           sudo apt install -y zip unzip openjdk-17-jdk python3-pip build-essential
           sudo apt-get update && sudo apt-get install -y yes
@@ -31,10 +29,8 @@ jobs:
       - name: Normalize line endings and fix smart quotes
         run: |
           sudo apt install -y dos2unix
-
           echo "📦 Converting CRLF to LF..."
           find . -type f -exec dos2unix {} \;
-
           echo "✂️ Replacing smart quotes (‘’)…"
           find . -type f \( -name "*.py" -o -name "*.sh" -o -name "*.kv" -o -name "*.spec" -o -name "*.yml" \) \
             -exec sed -i "s/‘/'/g; s/’/'/g" {} \;
@@ -51,49 +47,16 @@ jobs:
           accept-android-sdk-licenses: true
           cmdline-tools-version: 12266719 # 这就是16.0的别称。
 
-      - name: Check shell availability
-        shell: bash
-        run: |
-          echo "Checking /bin/sh symlink..."
-          ls -l /bin/sh
-
-          echo "Checking /bin/sh directly..."
-          /bin/sh -c "echo sh is working"
-
-
-          echo "Checking resolved sh path..."
-          which sh || echo "/bin/sh not found"
-
-          echo "Checking /bin/bash path..."
-          which bash
-
-          echo "Executing simple sh test..."
-          echo 'echo "sh is working"' | sh || echo "sh execution failed"
-
-      - name: Ensure /bin in PATH
-        run: |
-          echo "Ensuring /bin is in PATH..."
-          export PATH=/bin:$PATH
-          echo $PATH
-
-      - name: Trace sdkmanager command with strace
-        shell: bash
-        run: |
-          sudo apt install -y strace
-          strace -f -e execve /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
-
       - name: Install Android SDK Packages Separately
         shell: bash
         run: |
           # 强制更新 SDK 和工具
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --update
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
-
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;30.0.3"
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-31"
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "ndk;25.1.8937393"
-
         env:
           JAVA_HOME: ${{ env.JAVA_HOME }}
           ANDROID_HOME: /usr/local/lib/android/sdk
@@ -134,13 +97,6 @@ jobs:
           echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
           echo "/usr/local/lib/android/sdk/build-tools/30.0.3" >> $GITHUB_PATH
 
-      - name: Install missing packages with sdkmanager
-        run: |
-          cd /usr/local/lib/android/sdk/cmdline-tools
-          mkdir -p latest && cp -r 16.0/* latest/
-          yes | sdkmanager --licenses
-          sdkmanager "build-tools;30.0.3" "platforms;android-31" "ndk;25.1.8937393"
-
       - name: Build APK
         run: |
           buildozer android debug || (find .buildozer -name "*.log" -exec cat {} \; && exit 1)
@@ -157,10 +113,9 @@ jobs:
           path: bin/*.apk
           if-no-files-found: warn
 
-  # ✅ 新增的 post-check job
   post-check:
     runs-on: ubuntu-latest
-    needs: build  # 等待 build job 完成后再执行
+    needs: build
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
