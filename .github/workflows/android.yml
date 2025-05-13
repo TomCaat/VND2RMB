@@ -11,34 +11,61 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Cache Android SDK
+        uses: actions/cache@v4
+        with:
+          path: ~/.buildozer/android
+          key: ${{ runner.os }}-android-sdk-${{ hashFiles('buildozer.spec') }}
+          restore-keys: ${{ runner.os }}-android-sdk-
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('buildozer.spec') }}
+          restore-keys: ${{ runner.os }}-pip-
+
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y zip unzip openjdk-17-jdk python3-pip build-essential
           pip install buildozer cython
 
-      - name: Clear Buildozer cache
-        run: rm -rf ~/.buildozer
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 12266719 # Latest stable version (16.0)
+          packages: 'platform-tools build-tools;30.0.3 platforms;android-31'
+
+      - name: Set up environment variables
+        run: |
+          echo "ANDROID_HOME=$HOME/.android/sdk" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$HOME/.buildozer/android/platform/android-ndk-r23b" >> $GITHUB_ENV
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
 
       - name: Accept SDK licenses
         run: |
-          yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-
-      - name: Install required SDK packages
-        run: |
-          yes | sdkmanager --update
-          yes | sdkmanager "platform-tools" "build-tools;30.0.3" "platforms;android-31"
+          yes | sdkmanager --licenses || true
 
       - name: Build APK
         run: |
-          buildozer android debug
+          buildozer android debug || (cat .buildozer/logs/buildozer.log && exit 1)
 
       - name: List APKs
         run: |
           ls -lh bin/*.apk || echo "No APK found"
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: vnd2rmb-apk
           path: bin/*.apk
+          if-no-files-found: warn
