@@ -65,7 +65,11 @@ jobs:
         run: |
           # 创建 JAXB 存储目录
           mkdir -p $HOME/jaxb
-
+          java -version
+          javac -version
+          sdkmanager --version
+          sdkmanager --update
+          
           # 下载 JAXB 2.3.3（兼容 JDK 17）
           curl -L -o $HOME/jaxb/jaxb-api-2.3.3.jar https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.3/jaxb-api-2.3.3.jar
           curl -L -o $HOME/jaxb/jaxb-impl-2.3.3.jar https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.3/jaxb-impl-2.3.3.jar
@@ -75,6 +79,7 @@ jobs:
           export CLASSPATH="$HOME/jaxb/jaxb-api-2.3.3.jar:$HOME/jaxb/jaxb-impl-2.3.3.jar:$HOME/jaxb/jaxb-runtime-2.3.3.jar"
 
           # 添加 JVM 参数以兼容 JDK 17 模块系统
+          echo $JAVA_TOOL_OPTIONS
           export JAVA_TOOL_OPTIONS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
 
           # 设置 JAXB 上下文工厂（强制指定实现类）
