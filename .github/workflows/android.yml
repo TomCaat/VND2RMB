@@ -43,9 +43,16 @@ jobs:
           echo "Executing simple sh test..."
           echo 'echo "sh is working"' | sh || echo "sh execution failed"
 
+      - name: Ensure /bin in PATH
+        run: |
+          echo "Ensuring /bin is in PATH..."
+          export PATH=/bin:$PATH
+          echo $PATH
+
       - name: Install Android SDK Packages Separately
         shell: bash
         run: |
+          export SHELL=/bin/bash
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;30.0.3"
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-31"
