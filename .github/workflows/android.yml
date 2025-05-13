@@ -61,21 +61,27 @@ jobs:
           mkdir -p latest
           cp -r 16.0/* latest/
 
-      - name: Set up JAXB and configure CLASSPATH
+      - name: Setup JAXB for JDK 17
         run: |
-          # Create the directory to store JAXB JAR files
+          # 创建 JAXB 存储目录
           mkdir -p $HOME/jaxb
-          
-          # Download libjaxb-impl-java 2.3.0
-          curl -L -o $HOME/jaxb/jaxb-impl-2.3.0.jar https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.0/jaxb-impl-2.3.0.jar
-          # Download libjaxb-api-java 2.3.0
-          curl -L -o $HOME/jaxb/jaxb-api-2.3.0.jar https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.0/jaxb-api-2.3.0.jar
-    
-          # Add JAXB JAR to CLASSPATH
-          export CLASSPATH=$CLASSPATH:$HOME/jaxb/jaxb-api-2.3.0.jar:$HOME/jaxb/jaxb-impl-2.3.0.jar
-          echo "CLASSPATH=$CLASSPATH"
 
-          # Automatically accept licenses for sdkmanager
+          # 下载 JAXB 2.3.3（兼容 JDK 17）
+          curl -L -o $HOME/jaxb/jaxb-api-2.3.3.jar https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.3/jaxb-api-2.3.3.jar
+          curl -L -o $HOME/jaxb/jaxb-impl-2.3.3.jar https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.3/jaxb-impl-2.3.3.jar
+          curl -L -o $HOME/jaxb/jaxb-runtime-2.3.3.jar https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime/2.3.3/jaxb-runtime-2.3.3.jar
+
+          # 设置 CLASSPATH（包含所有 JAXB 依赖）
+          export CLASSPATH="$HOME/jaxb/jaxb-api-2.3.3.jar:$HOME/jaxb/jaxb-impl-2.3.3.jar:$HOME/jaxb/jaxb-runtime-2.3.3.jar"
+
+          # 添加 JVM 参数以兼容 JDK 17 模块系统
+          export JAVA_TOOL_OPTIONS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
+
+          # 设置 JAXB 上下文工厂（强制指定实现类）
+          export JAXB_CONTEXT_FACTORY="com.sun.xml.bind.v2.ContextFactory"
+
+          # 自动接受 Android SDK 协议（确保 ANDROID_HOME 已设置）
+          yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses
           yes | /usr/local/lib/android/sdk/tools/bin/sdkmanager --licenses
         
       - name: Install Android SDK Packages
