@@ -26,6 +26,9 @@ jobs:
 
       - name: Set up JAXB and configure CLASSPATH
         run: |
+          # Create the directory to store JAXB JAR files
+          mkdir -p $HOME/jaxb
+          
           # Download libjaxb-impl-java 2.3.0
           curl -L -o $HOME/jaxb/jaxb-impl-2.3.0.jar https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.0/jaxb-impl-2.3.0.jar
 
