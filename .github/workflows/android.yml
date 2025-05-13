@@ -71,11 +71,8 @@ jobs:
       - name: Install Android SDK Packages
         shell: bash
         run: |
-          echo "👉 Accepting all licenses..."
-          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
-
-          echo "🔄 Updating sdkmanager..."
-          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --update
+          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --update  || true
 
           echo "📦 Installing Android SDK components..."
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
