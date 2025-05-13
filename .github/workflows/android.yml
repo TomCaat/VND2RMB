@@ -55,7 +55,7 @@ jobs:
           sdkmanager --update
 
           # 接受 SDK 协议（使用统一路径）
-          yes | sdkmanager --licenses
+          sdkmanager --licenses --use-sdk-for-store
 
       - name: Checkout code
         uses: actions/checkout@v4
