@@ -17,6 +17,12 @@ jobs:
           sudo apt install -y zip unzip openjdk-17-jdk python3-pip build-essential
           pip install buildozer cython
 
+      - name: Clear Buildozer cache
+        run: rm -rf ~/.buildozer
+
+      - name: Accept SDK licenses
+        run: yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
       - name: Build APK
         run: |
           buildozer android debug
