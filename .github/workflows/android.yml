@@ -3,10 +3,7 @@ name: Android Build
 on:
   push:
     branches: [ main ]
-  workflow_run:
-    workflows: ["Android Build"]  # 主构建完成后自动触发 post-check
-    types:
-      - completed  # 成功或失败后均触发
+
 
 jobs:
   build:
