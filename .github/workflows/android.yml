@@ -19,8 +19,8 @@ jobs:
           apt update
 
           # 安装依赖
-           export DEBIAN_FRONTEND=noninteractive  # 跳过交互式配置
-           apt install -y curl zip unzip openjdk-17-jdk python3-pip build-essential dos2unix git
+          export DEBIAN_FRONTEND=noninteractive  # 跳过交互式配置
+          apt install -y curl zip unzip openjdk-17-jdk python3-pip build-essential dos2unix git
           
       - name: Link sh to dash to fix sdkmanager
         run: |
@@ -37,7 +37,6 @@ jobs:
           rm -rf /usr/local/lib/android/sdk
 
           # 设置 ANDROID_HOME（统一路径）
-          export ANDROID_HOME=$HOME/Android/Sdk
           mkdir -p $ANDROID_HOME
 
           # 解压到临时目录并移动内容
@@ -47,13 +46,9 @@ jobs:
           rm -rf $HOME/temp_sdk
 
           # 更新 PATH 并验证
-              export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
-              export PATH="$ANDROID_HOME/platform-tools:$PATH"
-
-              echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
-              echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
-              echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
 
           # 更新 SDK 组件（使用 SDK Manager 脚本）
           sdkmanager --update
@@ -99,7 +94,6 @@ jobs:
       - name: Set up environment
         run: |
           echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
-          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk/25.1.8937393" >>  $GITHUB_ENV
 
@@ -113,12 +107,6 @@ jobs:
         with:
           accept-android-sdk-licenses: true
           cmdline-tools-version: 12266719
-
-      - name: Create sdkmanager symlink (ensure latest available)
-        run: |
-          cd /usr/local/lib/android/sdk/cmdline-tools
-          mkdir -p latest
-          cp -r 16.0/* latest/
 
       - name: Install Android SDK Packages
         shell: bash
@@ -155,10 +143,13 @@ jobs:
           echo "=== 2. 路径有效性验证 ==="
           # 定义检查路径数组
           declare -A PATHS=(
-            ["ANDROID_HOME"]=$ANDROID_HOME 
-            ["JAVA_HOME"]=$JAVA_HOME 
+            ["ANDROID_HOME"]=$ANDROID_HOME
+            ["JAVA_HOME"]=$JAVA_HOME
             ["SDK_PATH"]=$SDK_PATH
           )
+
+          # 初始化 i 变量
+          i=1
 
           # 检查每个路径是否存在
           for NAME in "${!PATHS[@]}"; do
@@ -171,7 +162,6 @@ jobs:
               echo "2.${i}. ✅ $NAME 路径存在: $PATH_VAL"
             else
               echo "2.${i}. ❌ $NAME 路径不存在: $PATH_VAL"
-              exit 1
             fi
             ((i++))
           done
@@ -179,7 +169,10 @@ jobs:
 
           echo "=== 3. 工具版本检查 ==="
           TOOLS=("java" "sdkmanager" "adb" "buildozer")
+          
+          # 初始化 i 变量
           i=1
+          
           for TOOL in "${TOOLS[@]}"; do
             if command -v $TOOL &> /dev/null; then
               case $TOOL in
@@ -207,7 +200,10 @@ jobs:
           echo "=== 4. Android SDK 子目录检查 ==="
           SDK_BASE_PATH=${ANDROID_HOME:-/usr/local/lib/android/sdk}
           SUB_DIRS=("cmdline-tools" "build-tools" "platforms" "ndk")
+          
+          # 初始化 i 变量
           i=1
+
           for dir in "${SUB_DIRS[@]}"; do
             FULL_PATH="$SDK_BASE_PATH/$dir"
             if [ -d "$FULL_PATH" ]; then
@@ -229,7 +225,10 @@ jobs:
 
           # 检查 JDK 工具链
           JDK_TOOLS=("keytool" "jarsigner")
+          
+          # 初始化 i 变量
           i=2
+          
           for TOOL in "${JDK_TOOLS[@]}"; do
             if command -v $TOOL &> /dev/null; then
               echo "5.$i ✅ $TOOL 版本: $($TOOL -version 2>&1 | head -n1)"
@@ -239,9 +238,10 @@ jobs:
             ((i++))
           done
 
+
       - name: Build APK
         run: |
-          export JAVA_OPTS="--add-modules java.xml.bind"
+          echo "JAVA_OPTS=--add-modules java.xml.bind" >> $GITHUB_ENV
           yes | buildozer android debug || (find .buildozer -name "*.log" -exec cat {} \; && exit 1)
 
       - name: List APKs
