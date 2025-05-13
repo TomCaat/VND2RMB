@@ -47,10 +47,13 @@ jobs:
           rm -rf $HOME/temp_sdk
 
           # 更新 PATH 并验证
-              export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+              export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+              export PATH="$ANDROID_HOME/platform-tools:$PATH"
+
               echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
               echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
-              echo "$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
+              echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+
 
           # 更新 SDK 组件（使用 SDK Manager 脚本）
           sdkmanager --update
@@ -98,9 +101,12 @@ jobs:
           echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
           echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk/25.1.8937393" >>  $GITHUB_ENV
+
           echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
           echo "/usr/local/lib/android/sdk/build-tools/30.0.3" >> $GITHUB_PATH
           echo "/usr/local/lib/android/sdk/tools/bin" >> $GITHUB_PATH
+          
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -125,12 +131,6 @@ jobs:
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;30.0.3"
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-31"
           /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "ndk;25.1.8937393"
-
-        env:
-          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-          PATH: /usr/local/lib/android/sdk/cmdline-tools/latest/bin:$PATH
 
       - name: Install Buildozer   
         run: |
@@ -243,12 +243,6 @@ jobs:
         run: |
           export JAVA_OPTS="--add-modules java.xml.bind"
           yes | buildozer android debug || (find .buildozer -name "*.log" -exec cat {} \; && exit 1)
-        env:
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/25.1.8937393
-          PATH: /usr/local/lib/android/sdk/ndk/25.1.8937393:$PATH
-          CLASSPATH: "$HOME/jaxb/jaxb-api-2.3.3.jar:$HOME/jaxb/jaxb-impl-2.3.3.jar:$HOME/jaxb/jaxb-runtime-2.3.3.jar"
 
       - name: List APKs
         run: |
