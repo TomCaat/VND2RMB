@@ -22,10 +22,11 @@ jobs:
       - name: Install dependencies
         run: |
           echo $BASH_VERSION
+          export DEBIAN_FRONTEND=noninteractive  # 跳过交互式配置
           apt update  # 更新包列表
           apt install -y zip unzip openjdk-17-jdk python3-pip build-essential
           apt-get update && apt-get install -y yes
-          apt install -y bash dash 
+          apt install -y bash dash tzdata  # 安装时区数据
           ln -sf /bin/dash /usr/bin/sh  # 🔧 关键补充
           pip install --upgrade buildozer cython
 
