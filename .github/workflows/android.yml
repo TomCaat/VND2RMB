@@ -108,7 +108,7 @@ jobs:
       - name: Build APK
         run: |
           export BUILD_OZ_NO_ROOT_CHECK=1
-          buildozer android debug || (find .buildozer -name "*.log" -exec cat {} \; && exit 1)
+          yes | buildozer android debug || (find .buildozer -name "*.log" -exec cat {} \; && exit 1)
 
       - name: List APKs
         run: |
