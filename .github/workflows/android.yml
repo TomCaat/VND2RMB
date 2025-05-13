@@ -16,6 +16,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y zip unzip openjdk-17-jdk python3-pip build-essential
+          sudo apt-get update && sudo apt-get install -y yes
           sudo apt install -y bash dash 
           sudo ln -sf /bin/dash /usr/bin/sh  # 🔧 关键补充
           pip install --upgrade buildozer cython
@@ -81,10 +82,10 @@ jobs:
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --update
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
 
-          SHELL=/bin/sh /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
-          SHELL=/bin/sh /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;30.0.3"
-          SHELL=/bin/sh /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-31"
-          SHELL=/bin/sh /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "ndk;25.1.8937393"
+          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
+          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;30.0.3"
+          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-31"
+          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "ndk;25.1.8937393"
 
         env:
           JAVA_HOME: ${{ env.JAVA_HOME }}
