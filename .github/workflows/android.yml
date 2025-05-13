@@ -61,34 +61,6 @@ jobs:
           mkdir -p latest
           cp -r 16.0/* latest/
 
-      - name: Setup JAXB for JDK 17
-        run: |
-          # 创建 JAXB 存储目录
-          mkdir -p $HOME/jaxb
-          java -version
-          javac -version
-          sdkmanager --version
-          sdkmanager --update
-          
-          # 下载 JAXB 2.3.3（兼容 JDK 17）
-          curl -L -o $HOME/jaxb/jaxb-api-2.3.3.jar https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.3/jaxb-api-2.3.3.jar
-          curl -L -o $HOME/jaxb/jaxb-impl-2.3.3.jar https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.3/jaxb-impl-2.3.3.jar
-          curl -L -o $HOME/jaxb/jaxb-runtime-2.3.3.jar https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime/2.3.3/jaxb-runtime-2.3.3.jar
-
-          # 设置 CLASSPATH（包含所有 JAXB 依赖）
-          export CLASSPATH="$HOME/jaxb/jaxb-api-2.3.3.jar:$HOME/jaxb/jaxb-impl-2.3.3.jar:$HOME/jaxb/jaxb-runtime-2.3.3.jar"
-
-          # 添加 JVM 参数以兼容 JDK 17 模块系统
-          echo $JAVA_TOOL_OPTIONS
-          export JAVA_TOOL_OPTIONS="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
-
-          # 设置 JAXB 上下文工厂（强制指定实现类）
-          export JAXB_CONTEXT_FACTORY="com.sun.xml.bind.v2.ContextFactory"
-
-          # 自动接受 Android SDK 协议（确保 ANDROID_HOME 已设置）
-          yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses
-          yes | /usr/local/lib/android/sdk/tools/bin/sdkmanager --licenses
-        
       - name: Install Android SDK Packages
         shell: bash
         run: |
@@ -107,19 +79,60 @@ jobs:
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
           PATH: /usr/local/lib/android/sdk/cmdline-tools/latest/bin:$PATH
 
-      - name: Debug - Print SDK paths
+      - name: Setup JAXB for JDK 17
         run: |
-          echo "ANDROID_HOME: $ANDROID_HOME"
-          ls -la /usr/local/lib/android/sdk/
-          ls -la /usr/local/lib/android/sdk/cmdline-tools/
-          ls -la /usr/local/lib/android/sdk/build-tools/
-          ls -la /usr/local/lib/android/sdk/platforms/
-          ls -la /usr/local/lib/android/sdk/ndk/
+          # 创建 JAXB 存储目录
+          mkdir -p $HOME/jaxb
 
+          # 下载 Command-line Tools（兼容 JDK 17）
+          if command -v wget &> /dev/null; then
+            wget https://dl.google.com/android/repository/commandlinetools-linux-11049639_latest.zip -O commandlinetools-linux-latest.zip
+          else
+            curl -L -o commandlinetools-linux-latest.zip https://dl.google.com/android/repository/commandlinetools-linux-11049639_latest.zip
+          fi
+
+          # 清理旧 SDK 目录（备份重要数据后执行）
+          rm -rf $ANDROID_HOME
+          rm -rf /usr/local/lib/android/sdk
+
+          # 设置 ANDROID_HOME（统一路径）
+          export ANDROID_HOME=$HOME/Android/Sdk
+          mkdir -p $ANDROID_HOME
+
+          # 解压到临时目录并移动内容
+          unzip commandlinetools-linux-latest.zip -d $HOME/temp_sdk
+          mkdir -p $ANDROID_HOME/cmdline-tools/latest
+          mv $HOME/temp_sdk/* $ANDROID_HOME/cmdline-tools/latest/
+          rm -rf $HOME/temp_sdk
+
+          # 更新 PATH 并验证
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+
+
+          # 验证 Java 版本
+          java -version 2>&1 | grep -i "version"
+          javac -version 2>&1 | grep -i "version"
+
+          # 下载 JAXB 依赖（兼容 JDK 17）
+          curl -L -o $HOME/jaxb/jaxb-api-2.3.3.jar https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.3/jaxb-api-2.3.3.jar
+          curl -L -o $HOME/jaxb/jaxb-impl-2.3.3.jar https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.3/jaxb-impl-2.3.3.jar
+          curl -L -o $HOME/jaxb/jaxb-runtime-2.3.3.jar https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime/2.3.3/jaxb-runtime-2.3.3.jar
+
+          # 设置 CLASSPATH（包含所有 JAXB 依赖）
+          export CLASSPATH="$HOME/jaxb/jaxb-api-2.3.3.jar:$HOME/jaxb/jaxb-impl-2.3.3.jar:$HOME/jaxb/jaxb-runtime-2.3.3.jar"
+
+          # 设置 JAXB 上下文工厂（强制指定实现类）
+          export JAXB_CONTEXT_FACTORY="com.sun.xml.bind.v2.ContextFactory"
+
+          # 更新 SDK 组件（使用 SDK Manager 脚本）
+          sdkmanager --update
+
+          # 接受 SDK 协议（使用统一路径）
+          yes | sdkmanager --licenses
+          
       - name: Install Buildozer   
         run: |
           pip install --upgrade buildozer cython 
-          buildozer --version
 
       - name: Create Buildozer SDK Symlink
         run: |
@@ -127,28 +140,112 @@ jobs:
           mkdir -p "$(dirname "$SDK_PATH")"
           ln -sf /usr/local/lib/android/sdk "$SDK_PATH"
 
-      - name: Verify JAXB API and Impl are loaded correctly
+      - name: Debug - Structured Environment & SDK Validation
         run: |
-          # Compile a simple Java program to check JAXB classes
-          echo 'import javax.xml.bind.JAXBContext;' > $HOME/testJAXB.java
-          echo 'public class TestJAXB { public static void main(String[] args) { try { JAXBContext.newInstance(Object.class); System.out.println("JAXB is available!"); } catch (Exception e) { e.printStackTrace(); } } }' >> $HOME/testJAXB.java
+          echo "=== 1. 环境变量检查 ==="
+          echo "1.1 ANDROID_HOME: ${ANDROID_HOME:-未设置}"
+          echo "1.2 JAVA_HOME: ${JAVA_HOME:-未设置}"
+          echo "1.3 SDK_PATH: ${SDK_PATH:-未设置}"
+          echo "1.4 PATH: $PATH"
+          echo ""
 
-          # Compile the Java program
-          javac -cp $CLASSPATH:$HOME/jaxb/jaxb-api-2.3.0.jar:$HOME/jaxb/jaxb-impl-2.3.0.jar $HOME/testJAXB.java
+          echo "=== 2. 路径有效性验证 ==="
+          # 定义检查路径数组
+          declare -A PATHS=(
+            ["ANDROID_HOME"]=$ANDROID_HOME 
+            ["JAVA_HOME"]=$JAVA_HOME 
+            ["SDK_PATH"]=$SDK_PATH
+          )
 
-          # Run the compiled program
-          java -cp $CLASSPATH:$HOME/jaxb/jaxb-api-2.3.0.jar:$HOME/jaxb/jaxb-impl-2.3.0.jar TestJAXB
+          # 检查每个路径是否存在
+          for NAME in "${!PATHS[@]}"; do
+            PATH_VAL=${PATHS[$NAME]}
+            if [ -z "$PATH_VAL" ]; then
+              echo "2.${i}. ❌ $NAME 未设置"
+              continue
+            fi
+            if [ -d "$PATH_VAL" ]; then
+              echo "2.${i}. ✅ $NAME 路径存在: $PATH_VAL"
+            else
+              echo "2.${i}. ❌ $NAME 路径不存在: $PATH_VAL"
+              exit 1
+            fi
+            ((i++))
+          done
+          echo ""
+
+          echo "=== 3. 工具版本检查 ==="
+          TOOLS=("java" "sdkmanager" "adb" "buildozer")
+          i=1
+          for TOOL in "${TOOLS[@]}"; do
+            if command -v $TOOL &> /dev/null; then
+              case $TOOL in
+                java)
+                  echo "3.$i ✅ Java 版本: $(java -version 2>&1 | grep 'version')"
+                  ;;
+                sdkmanager)
+                  echo "3.$i ✅ SDK Manager 版本: $(sdkmanager --version 2>/dev/null | grep -i 'version' || echo '未知版本')"
+                  ;;
+                buildozer)
+                  echo "3.$i ✅ Buildozer 版本: $(buildozer --version 2>&1)"
+                  ;;
+                *)
+                  echo "3.$i ✅ $TOOL 版本: $($TOOL --version 2>&1 | head -n1)"
+                  ;;
+              esac
+            else
+              echo "3.$i ❌ $TOOL 未安装或不在 PATH 中"
+              [[ " $TOOL " == *" java "*|" sdkmanager "* ]] && exit 1
+            fi
+            ((i++))
+          done
+          echo ""
+
+          echo "=== 4. Android SDK 子目录检查 ==="
+          SDK_BASE_PATH=${ANDROID_HOME:-/usr/local/lib/android/sdk}
+          SUB_DIRS=("cmdline-tools" "build-tools" "platforms" "ndk")
+          i=1
+          for dir in "${SUB_DIRS[@]}"; do
+            FULL_PATH="$SDK_BASE_PATH/$dir"
+            if [ -d "$FULL_PATH" ]; then
+              echo "4.$i ✅ 存在: $FULL_PATH"
+            else
+              echo "4.$i ❌ 不存在: $FULL_PATH"
+            fi
+            ((i++))
+          done
+          echo ""
+
+          echo "=== 5. 高级检查 ==="
+          # 检查已安装的 Android 平台
+          if [ -d "$ANDROID_HOME/platforms" ]; then
+            echo "5.1 已安装的 Android SDK 平台: $(ls -1 "$ANDROID_HOME/platforms" | tr '\n' ' ')"
+          else
+            echo "5.1 ⚠️ 未找到 Android SDK 平台目录（可能未安装）"
+          fi
+
+          # 检查 JDK 工具链
+          JDK_TOOLS=("keytool" "jarsigner")
+          i=2
+          for TOOL in "${JDK_TOOLS[@]}"; do
+            if command -v $TOOL &> /dev/null; then
+              echo "5.$i ✅ $TOOL 版本: $($TOOL -version 2>&1 | head -n1)"
+            else
+              echo "5.$i ⚠️ $TOOL 未在 PATH 中（可能影响签名操作）"
+            fi
+            ((i++))
+          done
 
       - name: Build APK
         run: |
+          export JAVA_OPTS="--add-modules java.xml.bind"
           yes | buildozer android debug || (find .buildozer -name "*.log" -exec cat {} \; && exit 1)
         env:
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
           ANDROID_HOME: /usr/local/lib/android/sdk
           ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/25.1.8937393
           PATH: /usr/local/lib/android/sdk/ndk/25.1.8937393:$PATH
-          CLASSPATH: $CLASSPATH:$HOME/jaxb/jaxb-api-2.3.0.jar:$HOME/jaxb/jaxb-impl-2.3.0.jar
-
+          CLASSPATH: "$HOME/jaxb/jaxb-api-2.3.3.jar:$HOME/jaxb/jaxb-impl-2.3.3.jar:$HOME/jaxb/jaxb-runtime-2.3.3.jar"
 
       - name: List APKs
         run: |

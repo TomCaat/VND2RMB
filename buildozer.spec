@@ -25,6 +25,7 @@ android.sdk_path = /usr/local/lib/android/sdk
 android.ndk_path = /usr/local/lib/android/sdk/ndk/25.1.8937393
 android.skip_update =True
 android.accept_sdk_license = True
+android.add_jars = jaxb-api-2.3.3.jar, jaxb-impl-2.3.3.jar, jaxb-runtime-2.3.3.jar
 
 [buildozer]
 log_level = 2  
