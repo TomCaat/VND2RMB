@@ -25,6 +25,7 @@ android.strip_debug = 1
 [buildozer]
 log_level = 2  warn_on_root = 1
 
-# 如果手动下载 SDK/NDK，可指定本地路径（需与 CI 环境一致）
-# android.sdk_path = /home/runner/.android/sdk
-# android.ndk_path = /home/runner/.android/sdk/ndk/25.1.8937393
+
+
+android.sdk_path = /usr/local/lib/android/sdk
+android.ndk_path = /usr/local/lib/android/sdk/ndk/25.1.8937393
