@@ -24,22 +24,6 @@ jobs:
            apt install -y libjaxb-api-java
            # apt install -y libjaxb-impl-java
 
-      - name: Set up JAXB and configure CLASSPATH
-        run: |
-          # Create the directory to store JAXB JAR files
-          mkdir -p $HOME/jaxb
-          
-          # Download libjaxb-impl-java 2.3.0
-          curl -L -o $HOME/jaxb/jaxb-impl-2.3.0.jar https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.0/jaxb-impl-2.3.0.jar
-
-          # Add JAXB JAR to CLASSPATH
-          export CLASSPATH=$CLASSPATH:$HOME/jaxb/jaxb-impl-2.3.0.jar
-          echo "CLASSPATH=$CLASSPATH"
-
-          # Automatically accept licenses for sdkmanager
-          yes | /usr/local/lib/android/sdk/tools/bin/sdkmanager --licenses
-      
-
       - name: Link sh to dash to fix sdkmanager
         run: |
           ln -sf /bin/dash /usr/bin/sh
@@ -77,6 +61,21 @@ jobs:
           mkdir -p latest
           cp -r 16.0/* latest/
 
+      - name: Set up JAXB and configure CLASSPATH
+        run: |
+          # Create the directory to store JAXB JAR files
+          mkdir -p $HOME/jaxb
+          
+          # Download libjaxb-impl-java 2.3.0
+          curl -L -o $HOME/jaxb/jaxb-impl-2.3.0.jar https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.0/jaxb-impl-2.3.0.jar
+
+          # Add JAXB JAR to CLASSPATH
+          export CLASSPATH=$CLASSPATH:$HOME/jaxb/jaxb-impl-2.3.0.jar
+          echo "CLASSPATH=$CLASSPATH"
+
+          # Automatically accept licenses for sdkmanager
+          yes | /usr/local/lib/android/sdk/tools/bin/sdkmanager --licenses
+        
       - name: Install Android SDK Packages
         shell: bash
         run: |
