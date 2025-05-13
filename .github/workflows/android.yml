@@ -16,7 +16,18 @@ jobs:
       - name: Install base dependencies
         run: |
           apt update
-          apt install -y curl sudo zip unzip openjdk-17-jdk python3-pip build-essential bash dash yes dos2unix
+          # 检查 yes 命令是否存在，如果不存在则安装
+          if ! command -v yes &> /dev/null; then
+            echo "yes command not found, installing..."
+            sudo apt update
+            sudo apt install -y yes
+          else
+            echo "yes command already installed."
+          fi
+
+          # 安装其他依赖
+          sudo apt install -y curl zip unzip openjdk-17-jdk python3-pip build-essential dos2unix
+        
 
       - name: Link sh to dash to fix sdkmanager
         run: |
