@@ -27,12 +27,21 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: |
-            platform-tools
-            build-tools;30.0.3
-            platforms;android-31
-            ndk;25.1.8937393
           accept-android-sdk-licenses: true
+          cmdline-tools-version: 12266719 # 这就是16.0的别称。
+
+      - name: Install Android SDK Packages Separately
+        run: |
+          sdkmanager "platform-tools"
+          sdkmanager "build-tools;30.0.3"
+          sdkmanager "platforms;android-31"
+          sdkmanager "ndk;25.1.8937393"
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+          ANDROID_HOME: /usr/local/lib/android/sdk
+          PATH: /usr/local/lib/android/sdk/cmdline-tools/latest/bin:$PATH
+
+
 
       - name: Debug - Print SDK paths
         run: |
