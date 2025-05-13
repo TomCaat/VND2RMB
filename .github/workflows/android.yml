@@ -50,6 +50,12 @@ jobs:
           export PATH=/bin:$PATH
           echo $PATH
 
+      - name: Trace sdkmanager command with strace
+        shell: bash
+        run: |
+          sudo apt install -y strace
+          strace -f -e execve /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
+
       - name: Install Android SDK Packages Separately
         shell: bash
         run: |
