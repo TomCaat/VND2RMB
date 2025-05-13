@@ -55,7 +55,7 @@ jobs:
           sdkmanager --update
 
           # 接受 SDK 协议（使用统一路径）
-          (sleep 5; echo y; sleep 1; echo y) | sdkmanager --licenses || true
+          yes | sdkmanager --licenses || true
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -113,8 +113,9 @@ jobs:
           mkdir -p $HOME/jaxb
 
           # 验证 Java 版本
-          java -version 2>&1 | grep -i "version"
-          javac -version 2>&1 | grep -i "version"
+          sdkManager --version
+          java -version 
+          javac -version
 
           # 下载 JAXB 依赖（兼容 JDK 17）
           curl -L -o $HOME/jaxb/jaxb-api-2.3.3.jar https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.3/jaxb-api-2.3.3.jar
