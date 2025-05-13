@@ -60,7 +60,13 @@ jobs:
           echo "Running strace on sdkmanager..."
           strace -f -e execve /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
 
+      - name: Ensure yes command is available
+        run: |
+          echo "Ensuring yes is in PATH..."
+          which yes || sudo apt-get install -y yes
+
       - name: Install Android SDK Packages Separately
+        shell: /bin/bash
         run: |
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --update
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
