@@ -85,12 +85,8 @@ jobs:
           mkdir -p $HOME/jaxb
 
           # 下载 Command-line Tools（兼容 JDK 17）
-          if command -v wget &> /dev/null; then
-            wget https://dl.google.com/android/repository/commandlinetools-linux-11049639_latest.zip -O commandlinetools-linux-latest.zip
-          else
-            curl -L -o commandlinetools-linux-latest.zip https://dl.google.com/android/repository/commandlinetools-linux-11049639_latest.zip
-          fi
-
+          wget https://dl.google.com/android/repository/commandlinetools-linux-12258854_latest.zip -O commandlinetools-linux-latest.zip
+          
           # 清理旧 SDK 目录（备份重要数据后执行）
           rm -rf $ANDROID_HOME
           rm -rf /usr/local/lib/android/sdk
