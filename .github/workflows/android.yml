@@ -116,12 +116,11 @@ jobs:
       - name: Install Android SDK Packages
         shell: bash
         run: |
-
           echo "📦 Installing Android SDK components..."
-          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
-          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;30.0.3"
-          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-31"
-          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "ndk;25.1.8937393"
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools"
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "build-tools;30.0.3"
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platforms;android-31"
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "ndk;25.1.8937393"
 
       - name: Install Buildozer   
         run: |
