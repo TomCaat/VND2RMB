@@ -1,0 +1,50 @@
+BoxLayout:
+    orientation: 'vertical'
+    padding: 20
+    spacing: 10
+
+    Label:
+        text: app.rate_text
+        font_size: '20sp'
+        size_hint_y: None
+        height: '40dp'
+
+    TextInput:
+        id: vnd_input
+        hint_text: "请输入越南盾金额"
+        input_filter: 'int'
+        multiline: False
+        font_size: '20sp'
+        size_hint_y: None
+        height: '50dp'
+
+    Button:
+        text: "转换成人民币"
+        size_hint_y: None
+        height: "45dp"
+        on_press: app.convert()
+
+    Label:
+        id: result_label
+        text: app.result_text
+        font_size: '22sp'
+        color: 1, 0.3, 0.3, 1
+        size_hint_y: None
+        height: '40dp'
+
+    BoxLayout:
+        spacing: 10
+        size_hint_y: None
+        height: "45dp"
+
+        Button:
+            text: "×1,000"
+            on_press: app.multiply_input(1000)
+
+        Button:
+            text: "×10,000"
+            on_press: app.multiply_input(10000)
+
+        Button:
+            text: "清除"
+            on_press: app.clear_input()
