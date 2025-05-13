@@ -3,7 +3,7 @@ title = VND Converter
 package.name = vndconverter
 package.domain = org.example
 source.dir = .
-source.include_exts = py,kv,png
+source.include_exts = py,kv,png,jpeg
 source.exclude_dirs = .git,bin,dist,__pycache__
 source.exclude_patterns = *.pyc
 version = 0.1
@@ -13,7 +13,7 @@ orientation = portrait
 fullscreen = 1
 icon = ./assets/icon.jpeg
 # 添加更多权限（如需要访问存储）
-android.permissions = INTERNET, WRITE_EXTERNAL_STORAGE
+android.permissions = INTERNET
 # 确保 API 与 build-tools 版本匹配
 android.api = 31
 android.ndk = 25.1.8937393  # 指定完整 NDK 版本号

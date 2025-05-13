@@ -20,6 +20,17 @@ jobs:
           sudo ln -sf /bin/dash /usr/bin/sh  # 🔧 关键补充
           pip install --upgrade buildozer cython
 
+      - name: Normalize line endings and fix smart quotes
+        run: |
+          sudo apt install -y dos2unix
+
+          echo "📦 Converting CRLF to LF..."
+          find . -type f -exec dos2unix {} \;
+
+          echo "✂️ Replacing smart quotes (‘’)…"
+          find . -type f \( -name "*.py" -o -name "*.sh" -o -name "*.kv" -o -name "*.spec" -o -name "*.yml" \) \
+            -exec sed -i "s/‘/'/g; s/’/'/g" {} \;
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:

@@ -12,7 +12,7 @@ class VNDConverterApp(App):
     def build(self):
         Builder.load_file("ui.kv")
         Clock.schedule_once(lambda dt: self.get_rate(), 0.5)
-        return self
+	return Builder.load_file("ui.kv")  
 
     def get_rate(self):
         """获取实时汇率"""
