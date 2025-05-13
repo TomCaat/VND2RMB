@@ -28,7 +28,7 @@ jobs:
 
           # 安装其他依赖
            export DEBIAN_FRONTEND=noninteractive  # 跳过交互式配置
-           apt install -y curl zip unzip openjdk-17-jdk python3-pip build-essential dos2unix
+           apt install -y curl zip unzip openjdk-17-jdk python3-pip build-essential dos2unix 
         
 
       - name: Link sh to dash to fix sdkmanager
@@ -95,9 +95,9 @@ jobs:
           ls -la /usr/local/lib/android/sdk/platforms/
           ls -la /usr/local/lib/android/sdk/ndk/
 
-      - name: Install Buildozer
+      - name: Install Buildozer and its dependencies
         run: |
-          pip install --upgrade buildozer cython
+          pip install --upgrade buildozer cython git
 
       - name: Create Buildozer SDK Symlink
         run: |
@@ -107,7 +107,6 @@ jobs:
 
       - name: Build APK
         run: |
-          export BUILD_OZ_NO_ROOT_CHECK=1
           yes | buildozer android debug || (find .buildozer -name "*.log" -exec cat {} \; && exit 1)
 
       - name: List APKs
