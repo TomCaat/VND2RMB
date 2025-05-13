@@ -8,9 +8,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults: 
+      run: 
+        shell: bash
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          echo $BASH_VERSION
 
       - name: Install dependencies
         run: |
