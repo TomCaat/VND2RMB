@@ -38,6 +38,7 @@ jobs:
 
           # 设置 ANDROID_HOME（统一路径）
           ANDROID_HOME=$HOME/Android/Sdk
+          export ANDROID_HOME="$ANDROID_HOME"
           echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
           mkdir -p $ANDROID_HOME
 
@@ -48,6 +49,9 @@ jobs:
           rm -rf $HOME/temp_sdk
 
           # 更新 PATH 并验证
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+          export PATH="$ANDROID_HOME/platform-tools:$PATH"
+
           echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
 
