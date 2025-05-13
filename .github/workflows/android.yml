@@ -34,21 +34,26 @@ jobs:
       - name: Check shell availability
         shell: bash
         run: |
-          echo "Checking /bin/sh symlink and sh availability..."
+          echo "Checking /bin/sh symlink..."
           ls -l /bin/sh
-          which sh
-          sh --version || echo "sh is not available"
+
+          echo "Checking resolved sh path..."
+          which sh || echo "/bin/sh not found"
+
+          echo "Executing simple sh test..."
+          echo 'echo "sh is working"' | sh || echo "sh execution failed"
 
       - name: Install Android SDK Packages Separately
         shell: bash
         run: |
-          sdkmanager "platform-tools"
-          sdkmanager "build-tools;30.0.3"
-          sdkmanager "platforms;android-31"
-          sdkmanager "ndk;25.1.8937393"
+          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools"
+          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;30.0.3"
+          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-31"
+          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "ndk;25.1.8937393"
         env:
           JAVA_HOME: ${{ env.JAVA_HOME }}
           ANDROID_HOME: /usr/local/lib/android/sdk
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
           PATH: /usr/local/lib/android/sdk/cmdline-tools/latest/bin:$PATH
 
       - name: Debug - Print SDK paths
