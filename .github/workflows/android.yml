@@ -7,10 +7,10 @@ on:
 jobs:
   build:
     container:
-      image: ubuntu:20.04  # 你可以选择其他适合的容器镜像
+      image: ubuntu:20.04  # 使用合适的容器镜像
       options: --user root  # 使用 root 用户权限
-    defaults: 
-      run: 
+    defaults:
+      run:
         shell: bash  # 明确指定使用 bash shell
     steps:
       - name: Checkout code
