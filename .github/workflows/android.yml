@@ -107,7 +107,15 @@ jobs:
 
       - name: Build APK
         run: |
-          yes | buildozer android debug || (find .buildozer -name "*.log" -exec cat {} \; && exit 1)
+          yes | buildozer --sdk-path /usr/local/lib/android/sdk \
+                        --ndk-path /usr/local/lib/android/sdk/ndk/25.1.8937393 \
+                        android debug || (find .buildozer -name "*.log" -exec cat {} \; && exit 1)
+        env:
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+          ANDROID_HOME: /usr/local/lib/android/sdk
+          ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/25.1.8937393
+          PATH: /usr/local/lib/android/sdk/ndk/25.1.8937393:$PATH
+
 
       - name: List APKs
         run: |
