@@ -15,7 +15,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y zip unzip openjdk-17-jdk python3-pip build-essential
-          pip install buildozer==1.5.0 cython
+          pip install --upgrade buildozer cython
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -26,37 +26,37 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          cmdline-tools-version: 9477386 # cmdline-tools 12.0, compatible
-          packages: 'platform-tools build-tools;30.0.3 platforms;android-31'
+          cmdline-tools-version: 6858099  # cmdline-tools 7.0
+          packages: |
+            platform-tools
+            build-tools;30.0.3
+            platforms;android-31
+            ndk;25.1.8937393
 
       - name: Set up environment variables
         run: |
-          mkdir -p $HOME/.buildozer/android/platform/android-sdk
-          mv $HOME/.android/sdk/* $HOME/.buildozer/android/platform/android-sdk/ || true
-          echo "ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk" >> $GITHUB_ENV
-          echo "ANDROID_NDK_HOME=$HOME/.buildozer/android/platform/android-ndk-r25b" >> $GITHUB_ENV
-          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
-          echo "$ANDROID_HOME/build-tools/30.0.3" >> $GITHUB_PATH
+    		echo "ANDROID_HOME=$HOME/.android/sdk" >> $GITHUB_ENV
+    		echo "ANDROID_NDK_HOME=$HOME/.android/sdk/ndk/25.1.8937393" >> $GITHUB_ENV
+    		echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+		echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+		echo "$ANDROID_HOME/build-tools/30.0.3" >> $GITHUB_PATH
 
       - name: Create sdkmanager symlink for Buildozer
         run: |
           mkdir -p $ANDROID_HOME/tools/bin
           ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/tools/bin/sdkmanager
-          ls -l $ANDROID_HOME/tools/bin/sdkmanager || echo "sdkmanager symlink not created"
-          ls -l $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager || echo "cmdline-tools sdkmanager not found"
+          if [ -f "$ANDROID_HOME/tools/bin/sdkmanager" ]; then
+            echo "Symbolic link created successfully."
+          else
+            echo "Error: Symbolic link not created."
+            exit 1
+          fi
 
-      - name: Accept SDK licenses
-        run: |
-          yes | sdkmanager --licenses || true
-          yes | sdkmanager --licenses --include_obsolete || true
-          sdkmanager "build-tools;36.0.0" || true # Ensure build-tools;36.0.0 license
-
-      - name: Ensure build-tools installation
+      - name: Install build-tools and accept licenses
         run: |
           sdkmanager "build-tools;30.0.3"
-          ls -l $ANDROID_HOME/build-tools || echo "build-tools directory not found"
-          ls -l $ANDROID_HOME/build-tools/30.0.3/aidl || echo "aidl not found"
+          yes | sdkmanager --licenses
+          yes | sdkmanager --licenses --include_obsolete
 
       - name: Build APK
         run: |
