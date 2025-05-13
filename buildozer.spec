@@ -16,15 +16,14 @@ icon = ./assets/icon.jpeg
 android.permissions = INTERNET
 # 确保 API 与 build-tools 版本匹配
 android.api = 31
-android.ndk = 25.1.8937393  # 指定完整 NDK 版本号
+android.ndk = 25.1.8937393  
 android.sdk = 31
 android.build_tools = 30.0.3
 android.archs = arm64-v8a
 android.strip_debug = 1
 
 [buildozer]
-log_level = 2  # 提高日志详细程度以便调试
-warn_on_root = 1
+log_level = 2  warn_on_root = 1
 
 # 如果手动下载 SDK/NDK，可指定本地路径（需与 CI 环境一致）
 # android.sdk_path = /home/runner/.android/sdk
