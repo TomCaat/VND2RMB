@@ -98,6 +98,7 @@ jobs:
       - name: Install Buildozer   
         run: |
           pip install --upgrade buildozer cython 
+          buildozer --version
 
       - name: Create Buildozer SDK Symlink
         run: |

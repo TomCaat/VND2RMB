@@ -21,6 +21,8 @@ android.sdk = 31
 android.build_tools = 30.0.3
 android.archs = arm64-v8a
 android.strip_debug = 1
+android.sdk_path = /usr/local/lib/android/sdk
+android.ndk_path = /usr/local/lib/android/sdk/ndk/25.1.8937393
 
 [buildozer]
 log_level = 2  
