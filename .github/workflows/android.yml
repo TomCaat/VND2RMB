@@ -67,6 +67,9 @@ jobs:
           echo "Aristo, this is the issue command: "
           sdkmanager --sdk_root=/github/home/.android/sdk --list || { echo "sdkmanager 命令执行失败"; true; }
 
+          # kill old ones. 
+          mv /github/home/.android/sdk/tools /github/home/.android/sdk/tools.bak
+
       - name: Check Android SDK, NDK
         run: |
           echo "Aristo, ANDROID_HOME: $ANDROID_HOME"
