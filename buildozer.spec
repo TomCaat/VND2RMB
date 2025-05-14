@@ -26,7 +26,7 @@ android.ndk_path = /github/home/.android/sdk/ndk/25.1.8937393
 android.skip_update =True
 android.accept_sdk_license = True
 android.add_jars = jaxb-api-2.3.3.jar, jaxb-impl-2.3.3.jar, jaxb-runtime-2.3.3.jar
-android.ant_path =
+android.ant_path = /github/home/.ant
 
 [buildozer]
 log_level = 2  
