@@ -37,6 +37,12 @@ jobs:
           sdkmanager "platforms;android-31"
           sdkmanager "ndk;25.1.8937393"
       
+      - name: Check Android SDK Path
+        run: echo "Aristo ANDROID_HOME: $ANDROID_HOME"
+
+      - name: Check NDK Path
+        run: echo "Aristo $ANDROID_HOME/ndk"
+
       - name: Setup JAXB for JDK 17
         run: |
           # 创建 JAXB 存储目录
