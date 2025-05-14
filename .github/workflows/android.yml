@@ -45,28 +45,23 @@ jobs:
         run: |
           echo "Aristo $ANDROID_HOME/ndk"
 
-      - name: Setup JAXB for JDK 17
+      - name: Override sdkmanager with latest version
         run: |
-          # 创建 JAXB 存储目录
-          mkdir -p $HOME/jaxb
+          # 删除旧版本（可选，但建议确保无冲突）
+          rm -rf $ANDROID_HOME/cmdline-tools
 
-          # 验证 Java 版本
-          sdkmanager --version || true
-          java -version || true
-          javac -version || true
+          # 下载最新版 command-line tools
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          curl -sSLo commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
 
-          # 下载 JAXB 依赖（兼容 JDK 17）
-          curl -L -o $HOME/jaxb/jaxb-api-2.3.3.jar https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.3/jaxb-api-2.3.3.jar
-          curl -L -o $HOME/jaxb/jaxb-impl-2.3.3.jar https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.3/jaxb-impl-2.3.3.jar
-          curl -L -o $HOME/jaxb/jaxb-runtime-2.3.3.jar https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime/2.3.3/jaxb-runtime-2.3.3.jar
+          # 正确解压到 cmdline-tools/latest（避免多余嵌套）
+          mkdir -p $ANDROID_HOME/cmdline-tools/latest
+          unzip -q commandlinetools.zip -d $ANDROID_HOME/cmdline-tools/tmp
+          mv $ANDROID_HOME/cmdline-tools/tmp/cmdline-tools/* $ANDROID_HOME/cmdline-tools/latest/
+          rm -rf $ANDROID_HOME/cmdline-tools/tmp
 
-          # 设置 CLASSPATH（包含所有 JAXB 依赖）
-          export CLASSPATH="$HOME/jaxb/jaxb-api-2.3.3.jar:$HOME/jaxb/jaxb-impl-2.3.3.jar:$HOME/jaxb/jaxb-runtime-2.3.3.jar"
-          echo "CLASSPATH=$CLASSPATH" >> $GITHUB_ENV
-
-          # 设置 JAXB 上下文工厂（强制指定实现类）
-          export JAXB_CONTEXT_FACTORY="com.sun.xml.bind.v2.ContextFactory"
-          echo "JAXB_CONTEXT_FACTORY=$JAXB_CONTEXT_FACTORY" >> $GITHUB_ENV
+          # 添加新版 sdkmanager 到 PATH（全局有效）
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
 
       - name: Checkout code
         uses: actions/checkout@v4
