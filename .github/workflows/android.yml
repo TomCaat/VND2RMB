@@ -36,14 +36,6 @@ jobs:
           sdkmanager "build-tools;30.0.3"
           sdkmanager "platforms;android-31"
           sdkmanager "ndk;25.1.8937393"
-      
-      - name: Check Android SDK Path
-        run: |
-          echo "Aristo ANDROID_HOME: $ANDROID_HOME"
-
-      - name: Check NDK Path
-        run: |
-          echo "Aristo $ANDROID_HOME/ndk"
 
       - name: Override sdkmanager with latest version
         run: |
@@ -62,6 +54,7 @@ jobs:
 
           # 添加新版 sdkmanager 到 PATH（全局有效）
           echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -86,6 +79,43 @@ jobs:
       - name: Install Buildozer   
         run: |
           pip install --upgrade buildozer cython 
+
+      - name: Check sdkmanager
+        run: | 
+          echo "Aristo, sdkmanager is: "
+          sdkmanager --version
+          echo "Aristo, sdkmanager is which: "
+          which sdkmanager
+
+      - name: Check Android SDK, NDK
+        run: |
+          echo "Aristo, ANDROID_HOME: $ANDROID_HOME"
+          echo "Aristo, NDK path is:  $ANDROID_HOME/ndk"
+
+      - name: Setup JAXB for JDK 17
+        run: |
+          # 创建 JAXB 存储目录
+          mkdir -p $HOME/jaxb
+
+          # 验证 Java 版本
+          echo "Ariso, sdkmanager version is:  "
+          sdkmanager --version || true
+          echo "Arsito, Java version is:  "
+          java -version || true
+          javac -version || true
+
+          # 下载 JAXB 依赖（兼容 JDK 17）
+          curl -L -o $HOME/jaxb/jaxb-api-2.3.3.jar https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.3/jaxb-api-2.3.3.jar
+          curl -L -o $HOME/jaxb/jaxb-impl-2.3.3.jar https://repo1.maven.org/maven2/com/sun/xml/bind/jaxb-impl/2.3.3/jaxb-impl-2.3.3.jar
+          curl -L -o $HOME/jaxb/jaxb-runtime-2.3.3.jar https://repo1.maven.org/maven2/org/glassfish/jaxb/jaxb-runtime/2.3.3/jaxb-runtime-2.3.3.jar
+
+          # 设置 CLASSPATH（包含所有 JAXB 依赖）
+          export CLASSPATH="$HOME/jaxb/jaxb-api-2.3.3.jar:$HOME/jaxb/jaxb-impl-2.3.3.jar:$HOME/jaxb/jaxb-runtime-2.3.3.jar"
+          echo "CLASSPATH=$CLASSPATH" >> $GITHUB_ENV
+
+          # 设置 JAXB 上下文工厂（强制指定实现类）
+          export JAXB_CONTEXT_FACTORY="com.sun.xml.bind.v2.ContextFactory"
+          echo "JAXB_CONTEXT_FACTORY=$JAXB_CONTEXT_FACTORY" >> $GITHUB_ENV
 
       - name: Build APK
         run: |
