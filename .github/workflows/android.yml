@@ -39,7 +39,16 @@ jobs:
       - name: Check SDK
         run: | 
           # supports the way of p4a
-          mv /github/home/.android/sdk/cmdline-tools/13114758 /github/home/.android/sdk/cmdline-tools/latest
+          # mv /github/home/.android/sdk/cmdline-tools/13114758 /github/home/.android/sdk/cmdline-tools/latest
+          
+          # 删除旧结构中的 android 和 sdkmanager 文件（如果存在）
+          rm -f /github/home/.android/sdk/tools/bin/android
+          rm -f /github/home/.android/sdk/tools/bin/sdkmanager
+
+          # 创建软连接，将旧路径指向新版工具目录
+          ln -s /github/home/.android/sdk/cmdline-tools/13114758/bin/android /github/home/.android/sdk/tools/bin/android
+          ln -s /github/home/.android/sdk/cmdline-tools/13114758/bin/sdkmanager /github/home/.android/sdk/tools/bin/sdkmanager
+
 
           echo "Aristo, ANDROID_HOME: $ANDROID_HOME"
           echo "Aristo, NDK path is:  $ANDROID_HOME/ndk"
