@@ -35,20 +35,34 @@ jobs:
           sdkmanager "build-tools;30.0.3"
           sdkmanager "platforms;android-31"
           sdkmanager "ndk;25.1.8937393"
+            - name: Reinstall sdkmanager to target
+
+        run: |
+          # 删除旧版本（可选，但建议确保无冲突）
+          rm -rf $ANDROID_HOME/cmdline-tools
+
+          # 下载最新版 command-line tools
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          curl -sSLo commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
+
+          # 正确解压到 cmdline-tools/latest（避免多余嵌套）
+          mkdir -p $ANDROID_HOME/cmdline-tools/latest
+          unzip -q commandlinetools.zip -d $ANDROID_HOME/cmdline-tools/tmp
+          mv $ANDROID_HOME/cmdline-tools/tmp/cmdline-tools/* $ANDROID_HOME/cmdline-tools/latest/
+          rm -rf $ANDROID_HOME/cmdline-tools/tmp
+
+          # 添加新版 sdkmanager 到 PATH（全局有效）
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
 
       - name: Check SDK
         run: | 
-          # supports the way of p4a
-          # mv /github/home/.android/sdk/cmdline-tools/13114758 /github/home/.android/sdk/cmdline-tools/latest
-          
           # 删除旧结构中的 android 和 sdkmanager 文件（如果存在）
           rm -f /github/home/.android/sdk/tools/bin/android
           rm -f /github/home/.android/sdk/tools/bin/sdkmanager
 
           # 创建软连接，将旧路径指向新版工具目录
-          ln -s /github/home/.android/sdk/cmdline-tools/13114758/bin/android /github/home/.android/sdk/tools/bin/android
-          ln -s /github/home/.android/sdk/cmdline-tools/13114758/bin/sdkmanager /github/home/.android/sdk/tools/bin/sdkmanager
-
+          ln -s /github/home/.android/sdk/cmdline-tools/latest/bin/android /github/home/.android/sdk/tools/bin/android
+          ln -s /github/home/.android/sdk/cmdline-tools/latest/bin/sdkmanager /github/home/.android/sdk/tools/bin/sdkmanager
 
           echo "Aristo, ANDROID_HOME: $ANDROID_HOME"
           echo "Aristo, NDK path is:  $ANDROID_HOME/ndk"
