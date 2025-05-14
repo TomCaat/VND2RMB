@@ -65,10 +65,8 @@ jobs:
           echo "Aristo, this is the issue command: "
           sdkmanager --sdk_root=/github/home/.android/sdk --list || { echo "sdkmanager 命令执行失败"; true; }
 
-          # kill old ones. 
-          rm -rf /github/home/.android/sdk/tools
-          mkdir -p /github/home/.android/sdk/tools/bin
-          ln -s /github/home/.android/sdk/cmdline-tools/13114758/bin/sdkmanager /github/home/.android/sdk/tools/bin/sdkmanager
+          # supports the way of p4a
+          ln -s /github/home/.android/sdk/cmdline-tools/13114758 /github/home/.android/sdk/cmdline-tools/latest
 
 
       - name: Check Android SDK, NDK
