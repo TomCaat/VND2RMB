@@ -35,7 +35,6 @@ jobs:
           sdkmanager "build-tools;30.0.3"
           sdkmanager "platforms;android-31"
           sdkmanager "ndk;25.1.8937393"
-            - name: Reinstall sdkmanager to target
 
       - name: Reinstall sdkmanager
         run: |
