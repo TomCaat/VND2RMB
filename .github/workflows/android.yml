@@ -26,7 +26,8 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
-          cmdline-tools-version: 12266719
+          cmdline-tools-version: 13114758
+          #12266719
 
       - name: Install Android SDK Packages
         shell: bash
@@ -36,24 +37,6 @@ jobs:
           sdkmanager "build-tools;30.0.3"
           sdkmanager "platforms;android-31"
           sdkmanager "ndk;25.1.8937393"
-
-      - name: Override sdkmanager with latest version
-        run: |
-          # 删除旧版本（可选，但建议确保无冲突）
-          rm -rf $ANDROID_HOME/cmdline-tools
-
-          # 下载最新版 command-line tools
-          mkdir -p $ANDROID_HOME/cmdline-tools
-          curl -sSLo commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
-
-          # 正确解压到 cmdline-tools/latest（避免多余嵌套）
-          mkdir -p $ANDROID_HOME/cmdline-tools/latest
-          unzip -q commandlinetools.zip -d $ANDROID_HOME/cmdline-tools/tmp
-          mv $ANDROID_HOME/cmdline-tools/tmp/cmdline-tools/* $ANDROID_HOME/cmdline-tools/latest/
-          rm -rf $ANDROID_HOME/cmdline-tools/tmp
-
-          # 添加新版 sdkmanager 到 PATH（全局有效）
-          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
 
 
       - name: Checkout code
@@ -70,11 +53,6 @@ jobs:
       - name: Set up environment
         run: |
           echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
-          # echo "ANDROID_NDK_HOME=/usr/local/lib/android/sdk/ndk/25.1.8937393" >>  $GITHUB_ENV
-  
-          # echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
-          # echo "/usr/local/lib/android/sdk/build-tools/30.0.3" >> $GITHUB_PATH
-          # echo "/usr/local/lib/android/sdk/tools/bin" >> $GITHUB_PATH
 
       - name: Install Buildozer   
         run: |
@@ -86,26 +64,25 @@ jobs:
           sdkmanager --version
           echo "Aristo, sdkmanager is which: "
           which sdkmanager
-
+          echo "Aristo, this is the issue command: "
+          sdkmanager --sdk_root=/github/home/.android/sdk --list || { echo "sdkmanager 命令执行失败"; true; }
 
       - name: Check Android SDK, NDK
         run: |
           echo "Aristo, ANDROID_HOME: $ANDROID_HOME"
           echo "Aristo, NDK path is:  $ANDROID_HOME/ndk"
-          echo "Aristo, this is the issue command: "
-          sdkmanager --sdk_root=/github/home/.android/sdk --list || { echo "sdkmanager 命令执行失败"; true; }
+
+      - name: Check java
+        run: | 
+          # 验证 Java 版本
+          echo "Arsito, Java version is:  "
+          java -version || true
+          javac -version || true
 
       - name: Setup JAXB for JDK 17
         run: |
           # 创建 JAXB 存储目录
           mkdir -p $HOME/jaxb
-
-          # 验证 Java 版本
-          echo "Ariso, sdkmanager version is:  "
-          sdkmanager --version || true
-          echo "Arsito, Java version is:  "
-          java -version || true
-          javac -version || true
 
           # 下载 JAXB 依赖（兼容 JDK 17）
           curl -L -o $HOME/jaxb/jaxb-api-2.3.3.jar https://repo1.maven.org/maven2/javax/xml/bind/jaxb-api/2.3.3/jaxb-api-2.3.3.jar
@@ -128,7 +105,8 @@ jobs:
           echo "ANT_HOME=/github/home/.ant" >> $GITHUB_ENV
           echo "$ANT_HOME/bin" >> $GITHUB_PATH
           echo "Aristo, this is the ANT check: "
-          ant -version || { echo "ant -version 命令执行失败"; true; }
+          /github/home/.ant/bin/ant -version || { echo "ant -version 命令执行失败"; true; }
+          ls -l /github/home/.ant/bin/ant || { echo "❌ ant 可执行文件不存在或路径错误"; true; }
 
       - name: Build APK
         run: |
