@@ -36,6 +36,23 @@ jobs:
           sdkmanager "platforms;android-31"
           sdkmanager "ndk;25.1.8937393"
 
+      - name: Check SDK
+        run: | 
+          # supports the way of p4a
+          mv /github/home/.android/sdk/cmdline-tools/13114758 /github/home/.android/sdk/cmdline-tools/latest
+
+          echo "Aristo, ANDROID_HOME: $ANDROID_HOME"
+          echo "Aristo, NDK path is:  $ANDROID_HOME/ndk"
+
+          echo "Aristo, sdkmanager is: "
+          sdkmanager --version
+
+          echo "Aristo, sdkmanager is which: "
+          which sdkmanager
+
+          # echo "Aristo, this is the issue command: "
+          # sdkmanager --sdk_root=/github/home/.android/sdk --list || { echo "sdkmanager 命令执行失败"; true; }
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -54,23 +71,6 @@ jobs:
       - name: Install Buildozer   
         run: |
           pip install --upgrade buildozer cython 
-
-      - name: Check sdkmanager
-        run: | 
-          echo "Aristo, sdkmanager is: "
-          sdkmanager --version
-          echo "Aristo, sdkmanager is which: "
-          which sdkmanager
-          # echo "Aristo, this is the issue command: "
-          # sdkmanager --sdk_root=/github/home/.android/sdk --list || { echo "sdkmanager 命令执行失败"; true; }
-
-          # supports the way of p4a
-          mv /github/home/.android/sdk/cmdline-tools/13114758 /github/home/.android/sdk/cmdline-tools/latest
-
-      - name: Check Android SDK, NDK
-        run: |
-          echo "Aristo, ANDROID_HOME: $ANDROID_HOME"
-          echo "Aristo, NDK path is:  $ANDROID_HOME/ndk"
 
       - name: Check java
         run: | 
