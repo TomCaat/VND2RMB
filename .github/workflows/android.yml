@@ -87,10 +87,13 @@ jobs:
           echo "Aristo, sdkmanager is which: "
           which sdkmanager
 
+
       - name: Check Android SDK, NDK
         run: |
           echo "Aristo, ANDROID_HOME: $ANDROID_HOME"
           echo "Aristo, NDK path is:  $ANDROID_HOME/ndk"
+          echo "Aristo, this is the issue command: "
+          sdkmanager --sdk_root=/github/home/.android/sdk --list || { echo "sdkmanager 命令执行失败"; true; }
 
       - name: Setup JAXB for JDK 17
         run: |
@@ -116,6 +119,16 @@ jobs:
           # 设置 JAXB 上下文工厂（强制指定实现类）
           export JAXB_CONTEXT_FACTORY="com.sun.xml.bind.v2.ContextFactory"
           echo "JAXB_CONTEXT_FACTORY=$JAXB_CONTEXT_FACTORY" >> $GITHUB_ENV
+
+      - name: Download Apache Ant
+        run: |
+          curl -L https://archive.apache.org/dist/ant/binaries/apache-ant-1.9.4-bin.zip -o apache-ant-1.9.4-bin.zip
+          unzip apache-ant-1.9.4-bin.zip
+          mv apache-ant-1.9.4 /github/home/.ant
+          echo "ANT_HOME=/github/home/.ant" >> $GITHUB_ENV
+          echo "$ANT_HOME/bin" >> $GITHUB_PATH
+          echo "Aristo, this is the ANT check: "
+          ant -version || { echo "ant -version 命令执行失败"; true; }
 
       - name: Build APK
         run: |
