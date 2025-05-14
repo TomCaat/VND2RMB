@@ -133,8 +133,8 @@ jobs:
 
       - name: Check openssl
         run: | 
-         openssl version ||{echo "openssl 命令执行失败"; true;}
-         
+         openssl version ||{ echo "openssl 命令执行失败";  true; }
+
       - name: Build APK
         run: |
           echo "JAVA_OPTS=--add-modules java.xml.bind" >> $GITHUB_ENV
