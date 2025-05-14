@@ -27,7 +27,6 @@ jobs:
         with:
           accept-android-sdk-licenses: true
           cmdline-tools-version: 13114758
-          #12266719
 
       - name: Install Android SDK Packages
         shell: bash
@@ -37,7 +36,6 @@ jobs:
           sdkmanager "build-tools;30.0.3"
           sdkmanager "platforms;android-31"
           sdkmanager "ndk;25.1.8937393"
-
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -68,7 +66,10 @@ jobs:
           sdkmanager --sdk_root=/github/home/.android/sdk --list || { echo "sdkmanager 命令执行失败"; true; }
 
           # kill old ones. 
-          mv /github/home/.android/sdk/tools /github/home/.android/sdk/tools.bak
+          rm -rf /github/home/.android/sdk/tools
+          mkdir -p /github/home/.android/sdk/tools/bin
+          ln -s /github/home/.android/sdk/cmdline-tools/13114758/bin/sdkmanager /github/home/.android/sdk/tools/bin/sdkmanager
+
 
       - name: Check Android SDK, NDK
         run: |
