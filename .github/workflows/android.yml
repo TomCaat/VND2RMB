@@ -37,15 +37,16 @@ jobs:
           sdkmanager "ndk;25.1.8937393"
             - name: Reinstall sdkmanager to target
 
+      - name: Reinstall sdkmanager
         run: |
-          # 删除旧版本（可选，但建议确保无冲突）
+          # 删除旧版本
           rm -rf $ANDROID_HOME/cmdline-tools
 
           # 下载最新版 command-line tools
           mkdir -p $ANDROID_HOME/cmdline-tools
           curl -sSLo commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
 
-          # 正确解压到 cmdline-tools/latest（避免多余嵌套）
+          # 正确解压到 cmdline-tools/latest
           mkdir -p $ANDROID_HOME/cmdline-tools/latest
           unzip -q commandlinetools.zip -d $ANDROID_HOME/cmdline-tools/tmp
           mv $ANDROID_HOME/cmdline-tools/tmp/cmdline-tools/* $ANDROID_HOME/cmdline-tools/latest/
