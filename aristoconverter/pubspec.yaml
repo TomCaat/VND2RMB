@@ -1,0 +1,26 @@
+name: VND2RMB
+description: "Aristo created this for fun."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "D:/File/Projects/FlutterExample/VND2RMB/aristoconverter/cashConverter.jpg"  # 你的图标路径，最好是正方形PNG
